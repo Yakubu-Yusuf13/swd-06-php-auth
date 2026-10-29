@@ -6,10 +6,11 @@ A PHP 8 and MySQL authentication example for XAMPP. The application uses the
 ## Deploy to Vercel
 
 Vercel's PHP deployment uses its Container runtime (currently Beta) with
-FrankenPHP. The root `Dockerfile` packages only the public PHP application and
-installs PDO MySQL and Redis extensions; `Caddyfile` serves it over the port
-provided by Vercel. The Vercel Container runtime requires Docker to build and
-test locally.
+FrankenPHP. `Dockerfile.vercel` selects that runtime in Vercel, while the root
+`Dockerfile` provides the same image for local Docker builds. The image
+packages only the public PHP application and installs PDO MySQL and Redis
+extensions; `Caddyfile` serves it over the port provided by Vercel. The
+Container runtime requires Docker to build and test locally.
 
 Production needs managed services because Vercel cannot reach the MySQL server
 on your XAMPP computer and its containers do not provide durable shared PHP
@@ -22,8 +23,8 @@ file sessions. A compatible setup is:
 To deploy:
 
 1. In Vercel, import the GitHub repository
-   `Yakubu-Yusuf13/swd-06-php-auth`. Vercel should detect the root
-   `Dockerfile` and select the Container preset.
+   `Yakubu-Yusuf13/swd-06-php-auth`. Vercel should detect
+   `Dockerfile.vercel` and select the Container preset.
 2. Create the hosted database and Redis resources, and keep their credentials
    private.
 3. Add these environment variables to the Vercel project (at least for
