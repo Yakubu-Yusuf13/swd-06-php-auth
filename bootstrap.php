@@ -5,6 +5,7 @@ require_once __DIR__ . '/src/config.php';
 require_once __DIR__ . '/src/db.php';
 require_once __DIR__ . '/src/helpers.php';
 require_once __DIR__ . '/src/csrf.php';
+require_once __DIR__ . '/src/auth.php';
 
 if (config()['environment'] === 'development') {
     error_reporting(E_ALL);
@@ -26,3 +27,26 @@ session_set_cookie_params([
     'samesite' => 'Lax',
 ]);
 session_start();
+
+if (isset($_SESSION['user_id'])) {
+    $lastActivity = $_SESSION['last_activity'] ?? null;
+
+    if (!is_int($lastActivity) || $lastActivity > time()) {
+        $_SESSION['last_activity'] = time();
+    } elseif (time() - $lastActivity >= 1800) {
+        $requestedUrl = null;
+        if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET') {
+            $requestedUrl = validate_intended_url($_SERVER['REQUEST_URI'] ?? null);
+        }
+
+        $_SESSION = [];
+        session_regenerate_id(true);
+        if ($requestedUrl !== null) {
+            $_SESSION['_intended_url'] = $requestedUrl;
+        }
+        flash('error', 'You were signed out after 30 minutes of inactivity.');
+        redirect('login.php');
+    } else {
+        $_SESSION['last_activity'] = time();
+    }
+}

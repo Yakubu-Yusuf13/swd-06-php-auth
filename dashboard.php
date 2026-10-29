@@ -3,23 +3,13 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/bootstrap.php';
 
-if (!isset($_SESSION['user_id'])) {
-    flash('error', 'Please create an account or sign in to continue.');
-    redirect('register.php');
-}
-
-$statement = db()->prepare('SELECT name, email FROM users WHERE id = :id LIMIT 1');
-$statement->execute(['id' => $_SESSION['user_id']]);
-$user = $statement->fetch();
-
-if ($user === false) {
-    unset($_SESSION['user_id']);
-    session_regenerate_id(true);
-    flash('error', 'Your session is no longer valid. Please create an account or sign in.');
-    redirect('register.php');
-}
+$user = require_login();
 
 $success = flash('success');
+$createdAt = new DateTimeImmutable($user['created_at']);
+$lastLoginAt = $user['last_login_at'] === null
+    ? null
+    : new DateTimeImmutable($user['last_login_at']);
 ?>
 <!doctype html>
 <html lang="en">
@@ -38,6 +28,24 @@ $success = flash('success');
             <p class="notice notice-success" role="status"><?= e($success) ?></p>
         <?php endif; ?>
         <p class="subtitle">You are signed in as <?= e($user['email']) ?>.</p>
+        <dl class="account-details">
+            <div>
+                <dt>Account created</dt>
+                <dd><?= e($createdAt->format('F j, Y')) ?></dd>
+            </div>
+            <div>
+                <dt>Last login</dt>
+                <dd><?= $lastLoginAt === null ? 'Not recorded' : e($lastLoginAt->format('F j, Y g:i a')) ?></dd>
+            </div>
+            <div>
+                <dt>Role</dt>
+                <dd><?= e($user['role']) ?></dd>
+            </div>
+        </dl>
+        <form method="post" action="logout.php">
+            <?= csrf_field() ?>
+            <button type="submit">Sign out</button>
+        </form>
     </section>
 </main>
 </body>

@@ -3,9 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/bootstrap.php';
 
-if (isset($_SESSION['user_id'])) {
-    redirect('dashboard.php');
-}
+require_guest();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = trim((string) ($_POST['name'] ?? ''));
@@ -87,6 +85,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     session_regenerate_id(true);
     $_SESSION['user_id'] = (int) $pdo->lastInsertId();
+    $_SESSION['role'] = 'user';
+    $_SESSION['last_activity'] = time();
     unset($_SESSION['_old']);
 
     $updateLogin = $pdo->prepare('UPDATE users SET last_login_at = NOW() WHERE id = :id');
