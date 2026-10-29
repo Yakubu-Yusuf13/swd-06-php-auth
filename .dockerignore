@@ -1,0 +1,9 @@
+.git
+.vercel
+.env
+.env.*
+*.sql
+*.log
+README.md
+node_modules
+vendor

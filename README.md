@@ -3,6 +3,66 @@
 A PHP 8 and MySQL authentication example for XAMPP. The application uses the
 `swd_auth` database and its `users` and `login_attempts` tables.
 
+## Deploy to Vercel
+
+Vercel's PHP deployment uses its Container runtime (currently Beta) with
+FrankenPHP. The root `Dockerfile` packages only the public PHP application and
+installs PDO MySQL and Redis extensions; `Caddyfile` serves it over the port
+provided by Vercel. The Vercel Container runtime requires Docker to build and
+test locally.
+
+Production needs managed services because Vercel cannot reach the MySQL server
+on your XAMPP computer and its containers do not provide durable shared PHP
+file sessions. A compatible setup is:
+
+- **MySQL:** TiDB Cloud Starter/Essential, configured for a public TLS
+  connection. Create the `swd_auth` database and import `database.sql`.
+- **Sessions:** Upstash Redis using its TLS `rediss://` connection URL.
+
+To deploy:
+
+1. In Vercel, import the GitHub repository
+   `Yakubu-Yusuf13/swd-06-php-auth`. Vercel should detect the root
+   `Dockerfile` and select the Container preset.
+2. Create the hosted database and Redis resources, and keep their credentials
+   private.
+3. Add these environment variables to the Vercel project (at least for
+   Production):
+
+   | Variable | Value |
+   | --- | --- |
+   | `APP_ENV` | `production` |
+   | `DB_HOST` | TiDB public endpoint hostname |
+   | `DB_PORT` | TiDB connection port |
+   | `DB_NAME` | `swd_auth` |
+   | `DB_USER` | TiDB database username |
+   | `DB_PASSWORD` | TiDB database password |
+   | `DB_SSL_CA_BASE64` | Base64-encoded TiDB CA certificate |
+   | `REDIS_URL` | Upstash TLS URL, `rediss://default:<password>@<host>:<port>` |
+
+   The database CA can be encoded in PowerShell with:
+
+   ```powershell
+   [Convert]::ToBase64String([IO.File]::ReadAllBytes('C:\path\to\ca.pem'))
+   ```
+
+   Enter the resulting value and all service credentials directly in Vercel's
+   Environment Variables settings. Do not put them in Git, source files, or
+   chat. The application refuses to use file-based sessions or an unverified
+   database TLS connection when it detects a Vercel deployment.
+4. Deploy the production branch. The root URL redirects to sign-in; use
+   `/register.php` to create the first user.
+5. Promote the first administrator through an authenticated database query:
+   `UPDATE users SET role = 'admin' WHERE email = 'you@example.com';`
+
+   `promote-admin.php` is intended for a trusted CLI and is not included in the
+   public container image.
+
+Vercel Container runtime is currently Beta. A deployment is not ready for
+registration/login until the hosted MySQL and Redis services are provisioned,
+the required environment variables are set, and the production deployment
+completes successfully.
+
 ## Run with XAMPP
 
 1. Place this project at `C:\xampp\htdocs\swd\06-php-auth`.
