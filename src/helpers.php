@@ -6,6 +6,23 @@ function e(string $value): string
     return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 }
 
+function post_string(string $key): string
+{
+    $value = $_POST[$key] ?? '';
+
+    return is_string($value) ? $value : '';
+}
+
+function password_meets_policy(string $password): bool
+{
+    $length = preg_match_all('/./us', $password);
+
+    return $length !== false
+        && $length >= 10
+        && preg_match('/\p{L}/u', $password) === 1
+        && preg_match('/\p{N}/u', $password) === 1;
+}
+
 function redirect(string $location): void
 {
     $parts = parse_url($location);
@@ -48,15 +65,17 @@ function old(string $key, string $default = ''): string
 
 function render_navbar(array $user): void
 {
+    $basePath = config()['base_path'];
     ?>
     <nav class="site-nav" aria-label="Main navigation">
-        <a class="brand" href="dashboard.php">SWD Auth</a>
+        <a class="brand" href="<?= e($basePath . '/dashboard.php') ?>">SWD Auth</a>
         <div class="nav-links">
-            <a href="dashboard.php">Dashboard</a>
+            <a href="<?= e($basePath . '/dashboard.php') ?>">Dashboard</a>
+            <a href="<?= e($basePath . '/profile.php') ?>">Profile</a>
             <?php if (($user['role'] ?? null) === 'admin'): ?>
-                <a href="admin/users.php">Admin</a>
+                <a href="<?= e($basePath . '/admin/users.php') ?>">Admin</a>
             <?php endif; ?>
-            <form method="post" action="logout.php">
+            <form method="post" action="<?= e($basePath . '/logout.php') ?>">
                 <?= csrf_field() ?>
                 <button type="submit" class="nav-button">Sign out</button>
             </form>

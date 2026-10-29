@@ -7,7 +7,7 @@ function config(): array
 
     if ($config === null) {
         $config = [
-            'environment' => getenv('APP_ENV') ?: 'development',
+            'environment' => getenv('APP_ENV') ?: 'production',
             'base_path' => '/swd/06-php-auth',
             'database' => [
                 'host' => getenv('DB_HOST') ?: '127.0.0.1',

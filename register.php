@@ -6,10 +6,10 @@ require_once __DIR__ . '/bootstrap.php';
 require_guest();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $name = trim((string) ($_POST['name'] ?? ''));
-    $email = strtolower(trim((string) ($_POST['email'] ?? '')));
-    $password = (string) ($_POST['password'] ?? '');
-    $confirmPassword = (string) ($_POST['confirm_password'] ?? '');
+    $name = trim(post_string('name'));
+    $email = strtolower(trim(post_string('email')));
+    $password = post_string('password');
+    $confirmPassword = post_string('confirm_password');
 
     $_SESSION['_old'] = [
         'name' => $name,
@@ -35,15 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = 'Enter a valid email address (maximum 160 characters).';
     }
 
-    $passwordCharacters = [];
-    $passwordLength = preg_match_all('/./us', $password, $passwordCharacters);
-
-    if (
-        $passwordLength === false
-        || $passwordLength < 10
-        || preg_match('/\p{L}/u', $password) !== 1
-        || preg_match('/\p{N}/u', $password) !== 1
-    ) {
+    if (!password_meets_policy($password)) {
         $errors[] = 'Use a password with at least 10 characters, including a letter and a number.';
     }
 

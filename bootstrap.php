@@ -7,14 +7,20 @@ require_once __DIR__ . '/src/helpers.php';
 require_once __DIR__ . '/src/csrf.php';
 require_once __DIR__ . '/src/auth.php';
 
+error_reporting(E_ALL);
+ini_set('log_errors', '1');
 if (config()['environment'] === 'development') {
-    error_reporting(E_ALL);
     ini_set('display_errors', '1');
     ini_set('display_startup_errors', '1');
 } else {
     ini_set('display_errors', '0');
     ini_set('display_startup_errors', '0');
 }
+
+header('X-Frame-Options: DENY');
+header('X-Content-Type-Options: nosniff');
+header('Referrer-Policy: strict-origin-when-cross-origin');
+header("Content-Security-Policy: frame-ancestors 'none'");
 
 ini_set('session.use_strict_mode', '1');
 ini_set('session.use_only_cookies', '1');
