@@ -20,6 +20,7 @@ $lastLoginAt = $user['last_login_at'] === null
     <link rel="stylesheet" href="assets/auth.css">
 </head>
 <body>
+<?php render_navbar($user); ?>
 <main class="auth-shell">
     <section class="auth-card" aria-labelledby="dashboard-title">
         <p class="eyebrow">SWD Auth</p>
@@ -42,10 +43,6 @@ $lastLoginAt = $user['last_login_at'] === null
                 <dd><?= e($user['role']) ?></dd>
             </div>
         </dl>
-        <form method="post" action="logout.php">
-            <?= csrf_field() ?>
-            <button type="submit">Sign out</button>
-        </form>
     </section>
 </main>
 </body>

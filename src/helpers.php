@@ -45,3 +45,22 @@ function old(string $key, string $default = ''): string
 
     return is_string($value) ? $value : $default;
 }
+
+function render_navbar(array $user): void
+{
+    ?>
+    <nav class="site-nav" aria-label="Main navigation">
+        <a class="brand" href="dashboard.php">SWD Auth</a>
+        <div class="nav-links">
+            <a href="dashboard.php">Dashboard</a>
+            <?php if (($user['role'] ?? null) === 'admin'): ?>
+                <a href="admin/users.php">Admin</a>
+            <?php endif; ?>
+            <form method="post" action="logout.php">
+                <?= csrf_field() ?>
+                <button type="submit" class="nav-button">Sign out</button>
+            </form>
+        </div>
+    </nav>
+    <?php
+}

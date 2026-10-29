@@ -16,5 +16,6 @@ CREATE TABLE IF NOT EXISTS login_attempts (
   email VARCHAR(160) NOT NULL,
   ip VARCHAR(45) NOT NULL,
   attempted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  INDEX (email, attempted_at)
+  INDEX (email, attempted_at),
+  INDEX login_attempts_email_ip_time (email, ip, attempted_at)
 ) ENGINE=InnoDB;

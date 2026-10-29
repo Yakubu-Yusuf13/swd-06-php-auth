@@ -17,6 +17,44 @@ body {
     margin: 0;
 }
 
+.site-nav {
+    display: flex;
+    min-height: 64px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 10px max(20px, calc((100% - 1040px) / 2));
+    border-bottom: 1px solid #e4e8f0;
+    background: #fff;
+}
+
+.brand,
+.nav-links a {
+    color: #172033;
+    font-weight: 650;
+    text-decoration: none;
+}
+
+.brand {
+    color: #4358c9;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+}
+
+.nav-links form {
+    margin: 0;
+}
+
+.nav-button {
+    min-height: 38px;
+    margin: 0;
+    padding: 0 14px;
+}
+
 .auth-shell {
     display: grid;
     min-height: 100vh;
@@ -162,8 +200,76 @@ button:focus-visible {
     text-align: right;
 }
 
+.table-wrap {
+    overflow-x: auto;
+    margin-top: 24px;
+}
+
+.user-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    font-size: 0.9rem;
+    text-align: left;
+}
+
+.user-table th,
+.user-table td {
+    padding: 12px;
+    border-bottom: 1px solid #e8ebf1;
+    vertical-align: middle;
+}
+
+.user-table th {
+    color: #657087;
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.user-table form {
+    min-width: 120px;
+}
+
+.user-table select {
+    min-height: 38px;
+    padding: 6px;
+    border: 1px solid #ccd3df;
+    border-radius: 7px;
+    background: #fff;
+    font: inherit;
+}
+
+.user-table button {
+    min-height: 38px;
+    margin-top: 8px;
+    padding: 0 12px;
+}
+
+.muted {
+    color: #657087;
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    clip-path: inset(50%);
+}
+
 @media (max-width: 480px) {
     .auth-card {
         padding: 30px 24px;
+    }
+
+    .site-nav {
+        padding: 10px 16px;
+    }
+
+    .nav-links {
+        gap: 12px;
     }
 }

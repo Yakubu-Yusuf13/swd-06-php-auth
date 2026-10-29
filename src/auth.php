@@ -109,10 +109,54 @@ function require_role(string $role): array
 
     if (($user['role'] ?? null) !== $role) {
         http_response_code(403);
-        header('Content-Type: text/plain; charset=utf-8');
-        echo 'Forbidden';
+        header('Content-Type: text/html; charset=utf-8');
+        $dashboardUrl = e(config()['base_path'] . '/dashboard.php');
+        echo '<!doctype html><html lang="en"><head><meta charset="utf-8">'
+            . '<meta name="viewport" content="width=device-width, initial-scale=1">'
+            . '<title>Access denied</title><link rel="stylesheet" href="'
+            . e(config()['base_path'] . '/assets/auth.css')
+            . '"></head><body><main class="auth-shell"><section class="auth-card">'
+            . '<p class="eyebrow">403</p><h1>Access denied</h1>'
+            . '<p class="subtitle">You do not have permission to view this page.</p>'
+            . '<p><a href="' . $dashboardUrl . '">Return to your dashboard</a></p>'
+            . '</section></main></body></html>';
         exit;
     }
 
     return $user;
+}
+
+function login_throttle_remaining_minutes(string $email, string $ip): int
+{
+    $statement = db()->prepare(
+        'SELECT GREATEST(
+            1,
+            CEIL(TIMESTAMPDIFF(SECOND, NOW(), DATE_ADD(MIN(attempted_at), INTERVAL 15 MINUTE)) / 60)
+         ) AS retry_minutes
+         FROM login_attempts
+         WHERE email = :email
+           AND ip = :ip
+           AND attempted_at >= NOW() - INTERVAL 15 MINUTE
+         HAVING COUNT(*) >= 5'
+    );
+    $statement->execute(['email' => $email, 'ip' => $ip]);
+    $minutes = $statement->fetchColumn();
+
+    return $minutes === false ? 0 : (int) $minutes;
+}
+
+function record_login_attempt(string $email, string $ip): void
+{
+    $statement = db()->prepare(
+        'INSERT INTO login_attempts (email, ip) VALUES (:email, :ip)'
+    );
+    $statement->execute(['email' => $email, 'ip' => $ip]);
+}
+
+function clear_login_attempts(string $email, string $ip): void
+{
+    $statement = db()->prepare(
+        'DELETE FROM login_attempts WHERE email = :email AND ip = :ip'
+    );
+    $statement->execute(['email' => $email, 'ip' => $ip]);
 }

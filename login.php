@@ -18,10 +18,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         redirect('login.php');
     }
 
+    $throttleEmail = (
+        strlen($email) <= 160
+        && filter_var($email, FILTER_VALIDATE_EMAIL) !== false
+    )
+        ? $email
+        : 'invalid-' . hash('sha256', $email);
+    $remoteIp = $_SERVER['REMOTE_ADDR'] ?? '';
+    $ip = is_string($remoteIp) && filter_var($remoteIp, FILTER_VALIDATE_IP) !== false
+        ? $remoteIp
+        : '0.0.0.0';
+    $retryMinutes = login_throttle_remaining_minutes($throttleEmail, $ip);
+
+    if ($retryMinutes > 0) {
+        flash('error', "Too many attempts, try again in {$retryMinutes} minutes.");
+        redirect('login.php');
+    }
+
     $user = false;
     if (
-        $email !== ''
-        && strlen($email) <= 160
+        strlen($email) <= 160
         && filter_var($email, FILTER_VALIDATE_EMAIL) !== false
     ) {
         $statement = db()->prepare(
@@ -41,11 +57,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     );
 
     if (!is_array($user) || !$passwordIsValid) {
+        record_login_attempt($throttleEmail, $ip);
+        $retryMinutes = login_throttle_remaining_minutes($throttleEmail, $ip);
+        if ($retryMinutes > 0) {
+            flash('error', "Too many attempts, try again in {$retryMinutes} minutes.");
+            redirect('login.php');
+        }
+
         flash('error', 'Invalid email or password.');
         redirect('login.php');
     }
 
     $pdo = db();
+    clear_login_attempts($throttleEmail, $ip);
     if (password_needs_rehash($user['password_hash'], PASSWORD_DEFAULT)) {
         $newPasswordHash = password_hash($password, PASSWORD_DEFAULT);
         $rehash = $pdo->prepare('UPDATE users SET password_hash = :password_hash WHERE id = :id');
