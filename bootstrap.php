@@ -26,10 +26,18 @@ ini_set('session.use_strict_mode', '1');
 ini_set('session.use_only_cookies', '1');
 ini_set('session.gc_maxlifetime', '1800');
 session_name('SWDSESSID');
+$isHttps = isset($_SERVER['HTTPS'])
+    && strtolower((string) $_SERVER['HTTPS']) !== 'off';
+if (!$isHttps && getenv('VERCEL') === '1') {
+    $forwardedProto = $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '';
+    $isHttps = is_string($forwardedProto)
+        && strtolower(trim(explode(',', $forwardedProto)[0])) === 'https';
+}
+
 session_set_cookie_params([
     'lifetime' => 0,
     'path' => config()['base_path'] === '' ? '/' : config()['base_path'],
-    'secure' => isset($_SERVER['HTTPS']) && strtolower((string) $_SERVER['HTTPS']) !== 'off',
+    'secure' => $isHttps,
     'httponly' => true,
     'samesite' => 'Lax',
 ]);
@@ -49,6 +57,9 @@ if ($redisUrl !== false && $redisUrl !== '') {
         || !isset($redis['pass'])
     ) {
         throw new RuntimeException('REDIS_URL must be a redis:// or rediss:// URL with host, port, and password.');
+    }
+    if (getenv('VERCEL') === '1' && $redis['scheme'] !== 'rediss') {
+        throw new RuntimeException('REDIS_URL must use rediss:// TLS on Vercel.');
     }
 
     $redisScheme = $redis['scheme'] === 'rediss' ? 'tls' : 'tcp';
